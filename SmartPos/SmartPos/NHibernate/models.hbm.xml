@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" auto-import="true" assembly="SmartPos" namespace="SmartPos.Models">
+  
+  <!--SALESITEM-->
+  <class name="SalesItem" table="SalesItem" dynamic-update="true" >
+    <cache usage="read-write"/>
+    <id name="Sn" column="Sn" type="int">
+      <generator class="native" />
+    </id>
+    <property name="Sid" />
+    <property name="Pid" />
+    <property name="Qty" />
+    <property name="Oid" />
+    <property name="Total" />
+  </class>
+
+  <!--ORDER-->
+  <class name="Order" table="`Order`" dynamic-update="true" >
+    <cache usage="read-write"/>
+    <id name="Sn" column="Sn" type="int">
+      <generator class="native" />
+    </id>
+    <property name="Oid" />
+    <property name="Date" />
+    <property name="Cid" />
+    <property name="GrossTotal" />
+  </class>
+
+  <!--PRODUCT-->
+  <class name="Product" table="Product" dynamic-update="true" >
+    <cache usage="read-write"/>
+    <id name="Sn" column="Sn" type="int">
+      <generator class="native" />
+    </id>
+    <property name="Pid" />
+    <property name="Description" />
+    <property name="Price" />
+    <property name="Qty"/>
+  </class>
+
+  <!--INVENTORY-->
+  <class name="Inventory" table="Inventory" dynamic-update="true" >
+    <cache usage="read-write"/>
+    <id name="Sn" column="Sn" type="int">
+      <generator class="native" />
+    </id>
+    <property name="Pid" />
+    <property name="QtyInStock" />
+  </class>
+
+  <!--CUSTOMER-->
+  <class name="Customer" table="Customer" dynamic-update="true" >
+    <cache usage="read-write"/>
+    <id name="Sn" column="Sn" type="int">
+      <generator class="native" />
+    </id>
+    <property name="Cid" />
+    <property name="Name" />
+  </class>
+
+  <!--StockIn-->
+  <class name="StockIn" table="StockIn" dynamic-update="true" >
+    <cache usage="read-write"/>
+    <id name="Sn" column="Sn" type="int">
+      <generator class="native" />
+    </id>
+    <property name="Pid" />
+    <property name="StockedIn" />
+    <property name="Date" />
+  </class>
+
+  <!--StockOut-->
+  <class name="StockOut" table="StockOut" dynamic-update="true" >
+    <cache usage="read-write"/>
+    <id name="Sn" column="Sn" type="int">
+      <generator class="native" />
+    </id>
+    <property name="Pid" />
+    <property name="StockedOut" />
+    <property name="Date" />
+  </class>
+
+</hibernate-mapping>

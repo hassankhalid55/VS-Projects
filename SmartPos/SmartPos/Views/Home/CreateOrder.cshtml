@@ -1,0 +1,220 @@
+﻿@using Infragistics.Web.Mvc;
+@model IQueryable<SmartPos.Models.OrderProductSalesitem_Model>
+@{
+    ViewBag.Title = "CreateOrder";
+}
+
+<div class="container">
+    
+    <div class="row col-lg-14">
+        <div class="col-lg-6">
+            <h2>Select Products</h2>
+            @(Html.Infragistics()
+            .Grid<SmartPos.Models.Product>()
+            .ID("igGrid")
+            .PrimaryKey("Sn")
+            .Width("100%")
+            .Height("500px")
+            .AutoGenerateColumns(false)
+            .AutoCommit(true)
+            .Columns(column =>
+            {
+                column.For(x => x.Sn).HeaderText("Sn");
+                column.For(x => x.Pid).HeaderText("Pid");
+                column.For(x => x.Description).HeaderText("Description");
+                column.For(x => x.Price).HeaderText("Price");
+                column.For(x => x.Qty).HeaderText("Qty");
+            })
+            .Features(f =>
+            {
+                //f.GroupBy().Type(OpType.Remote);
+
+                f.Paging()
+                    .PageSize(25);
+                f.Selection().Mode(SelectionMode.Row)
+                    .MultipleSelection(false);
+                f.Filtering().Mode(FilterMode.Simple).ColumnSettings(settings =>
+                {
+                    settings.ColumnSetting().ColumnKey("Sn").AllowFiltering(false);
+                    settings.ColumnSetting().ColumnKey("Qty").AllowFiltering(false);
+                    settings.ColumnSetting().ColumnKey("Price").AllowFiltering(false);
+                });
+                f.Updating().EditMode(GridEditMode.Row)
+                    .EnableAddRow(false).EnableDeleteRow(false)
+                    .StartEditTriggers(GridStartEditTriggers.F2);
+
+             })
+            .DataSourceUrl(Url.Action("DisplayProducts"))
+            .UpdateUrl(Url.Action("UpdateProductsWhenOrderSaved"))
+            .DataBind()
+            .Render())
+
+            <div id="selectionDiv" style="visibility:hidden">
+                <h4 id="selected">Selected: <span id="selectedProductDesc">  </span> </h4>
+                <h4 id="avQty">Available Quantity: <span id="selectedProductAvQty">  </span> </h4>
+                <h4>Enter Qty: <span><input id="input_qty" type="number" required /></span> </h4>
+                <span> <input type="button" id="btn_add_item" value="Add this Item" /> </span>
+            </div>
+
+        </div>
+
+        @* ORDER GRID *@ @* ORDER GRID *@@* ORDER GRID *@@* ORDER GRID *@@* ORDER GRID *@@* ORDER GRID *@@* ORDER GRID *@@* ORDER GRID *@@* ORDER GRID *@
+
+        <div class="col-lg-6">
+            <h2>Order</h2>
+            @(Html.Infragistics()
+            .Grid<SmartPos.Models.ExtendedSalesItem>()
+            .ID("igGrid1")
+            .PrimaryKey("Sn")
+            .Width("100%")
+            .Height("500px")
+            .AutoGenerateColumns(false)
+            .Columns(column =>
+            {
+                column.For(x => x.Sn).HeaderText("Sn");
+                column.For(x => x.Pid).HeaderText("Pid");
+                column.For(x => x.Description).HeaderText("Description");
+                column.For(x => x.Price).HeaderText("Price");
+                column.For(x => x.Qty).HeaderText("Qty");
+                column.For(x => x.Total).HeaderText("Total");
+            })
+            .Features(f =>
+            {
+                //f.GroupBy().Type(OpType.Remote);
+
+                f.Paging()
+            .PageSize(25);
+                f.Selection().Mode(SelectionMode.Row)
+                .MultipleSelection(false);
+                f.Updating().EditMode(GridEditMode.Row).EnableAddRow(false);
+
+            })
+            .DataSourceUrl(Url.Action("GenerateOrder"))
+            .UpdateUrl(Url.Action("SaveOrder"))
+            .DataBind()
+            .Render())
+
+            <div style="margin-top:20px"></div>
+
+            <div class="row col-lg-14" style="margin-left:2px">
+                <input style="padding-left:1px" id="customer_name" type="text" placeholder="Customer Name" />
+                <input style="margin-left:5px" type="button" value="Save Order" id="btn_save_order" />
+            </div>
+
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    //$("#selectionDiv").css("visibility", "visible");
+    //$("#igGrid1_container_loading").css("display", "none");
+    var orderItemSn = 1;
+    var qty_input = $("#input_qty");
+    $("#igGrid").on("iggridselectionrowselectionchanged", function () { //do something when iggrid's row is selected
+        var selectedRow = $("#igGrid").igGridSelection('selectedRow');  //get the selected row
+        var product = $("#igGrid").data('igGrid').dataSource.dataView()[selectedRow.index]; //get data of selected row
+        console.log(product);
+        var qtyAvailable;
+
+        $("#selectionDiv").css("visibility", "visible");
+        $("#selectedProductDesc").text(product["Description"]);
+        $("#selectedProductAvQty").text(product["Qty"]);
+        qtyAvailable = product["Qty"];
+
+        qty_input.val("");
+        qty_input.focus();
+
+        console.log("available quantity" + qtyAvailable);
+
+        //qty_input.change(function () {
+        //    var qtyEntered = $("#input_qty").val();
+            
+        //    if (qtyEntered == 0 || qtyEntered < 0) {
+        //        alert("Quantity must be > 0");
+        //        qty_input.val(0);
+        //        qty_input.focus();
+        //    }
+        //    if (qtyEntered > qtyAvailable) {
+        //        alert("Not enough quantity available");
+        //        qty_input.val(0);
+        //        qty_input.focus();
+        //    }
+            
+        //});
+
+        
+    });
+
+    //add selected product in order grid on button click
+    var btn_add_item = $("#btn_add_item");
+    btn_add_item.click(function () {
+        var selectedRow = $("#igGrid").igGridSelection('selectedRow');  //get the selected row
+        var product = $("#igGrid").data('igGrid').dataSource.dataView()[selectedRow.index]; //get data of selected row
+
+        if (qty_input.val() == null || qty_input.val() == 0) {
+            alert("Qty Must be Non Zero");
+            $("#input_qty").focus();
+        }
+        else if (qty_input.val() > product["Qty"]){
+            alert("Not enough Qty Available");
+            $("#input_qty").focus();
+
+        }
+        else {
+            if (product != null) {
+                console.log("product" + product.last);
+                var item = {
+                    "Sn": orderItemSn,
+                    "Pid": product["Pid"],
+                    "Description": product["Description"],
+                    "Price": product["Price"],
+                    "Qty": qty_input.val(),
+                    "Total": qty_input.val() * product["Price"]
+                }
+
+                $("#igGrid1").igGridUpdating("addRow", item); //add salesItem into Order Grid
+                orderItemSn += 1;
+                updateProductQtOnGrid(product, qty_input.val(), product["Sn"]);
+            }
+        }
+
+    });
+
+    function updateProductQtOnGrid(product, qtyEntered, index) { //updates quantity of product in product grid
+
+        product["Qty"] -= qtyEntered;
+        console.log(product["Qty"]);
+        $('#igGrid').igGridUpdating('updateRow', index, product);
+        
+    }
+
+    $("#btn_save_order").click(function () {
+        var customerName = $("#customer_name");
+        if (customerName.val() == "")
+        {
+            console.log("customer name is null");
+            alert("please enter customer name");
+            customerName.focus();
+        }
+        else {
+            //$.post("/Home/getDnC", { customerName: customerName.val(), orderDate: "@DateTime.UtcNow" });
+            console.log("@DateTime.Now");
+            $.getJSON("/Home/getDnC?customerName=" + customerName.val(), function (result) {
+                if (result.status == "true") {
+                    $('#igGrid').igGrid('saveChanges');
+                    $('#igGrid1').igGrid('saveChanges');
+                    alert("order saved");
+                    console.log("@DateTime.Now");
+
+                }
+                else
+                    alert("there was a problem saving order");
+            });
+           
+        }
+
+    })
+
+</script>

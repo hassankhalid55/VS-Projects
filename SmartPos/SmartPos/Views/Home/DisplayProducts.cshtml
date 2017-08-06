@@ -1,0 +1,91 @@
+﻿@using Infragistics.Web.Mvc;
+@using System.Data;
+@*@model List<SmartPos.Models.Product>*@
+@*Always pass querable model to igGrid*@
+@model IQueryable<SmartPos.Models.Product>
+@{
+    ViewBag.Title = "Manage Products";
+}
+
+<h2>Product Inventory</h2>
+
+<div class="container">
+    <div class="row col-lg-14" style="margin-top: 20px">
+        <div>
+            @(Html.Infragistics()
+            .Grid<SmartPos.Models.Product>()
+            .ID("igGrid")
+            .PrimaryKey("Sn")
+            .Width("100%")
+            .Height("600px")
+            .AutoGenerateColumns(false)
+            .Columns(column =>
+            {
+                column.For(x => x.Sn).HeaderText("Sn");
+                column.For(x => x.Pid).HeaderText("Pid");
+                column.For(x => x.Description).HeaderText("Description");
+                column.For(x => x.Price).HeaderText("Price");
+                column.For(x => x.Qty).HeaderText("Qty");
+            })
+            .Features(f =>
+            {
+                //f.GroupBy().Type(OpType.Remote);
+                f.Updating()
+                    .ColumnSettings(settings =>
+                    {
+                        settings.ColumnSetting().ColumnKey("Sn").ReadOnly(true);
+                        settings.ColumnSetting().ColumnKey("Qty").Required(true);
+                        settings.ColumnSetting().ColumnKey("Price").Required(true);
+                    })
+                    .EditMode(GridEditMode.Row).EnableDeleteRow(true).EnableAddRow(true)
+                    .StartEditTriggers(GridStartEditTriggers.DblClick).ShowDoneCancelButtons(true)
+                    .AddRowLabel("Add New Product");
+                f.Paging()
+                    .PageSize(25);
+
+            })
+            .DataSourceUrl(Url.Action("DisplayProducts"))
+            .UpdateUrl(Url.Action("UpdateProducts"))
+            .DataBind()
+            .Render())
+
+            <input type="button" id="saveChanges" value="Save Changes" />
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+    $("#saveChanges").igButton({ labelText: $("#saveChanges").val(), disabled: false });
+    $("#saveChanges").on('igbuttonclick',
+            function (e) {
+                $("#igGrid").igGrid("saveChanges");
+                return false;
+            }
+        );
+    $('#igGrid').on('iggridupdatingrowadded', function () {
+        //alert('row added');
+        $('#igGrid').igGrid('saveChanges');
+    });
+
+    $('#igGrid').on('iggridupdatingeditrowended', function (event, ui) {
+        //alert('row updated');
+        $('#igGrid').igGrid('saveChanges');
+    });
+
+    $('#igGrid').on('iggridupdatingrowdeleted', function () {
+        //alert('row deleted');
+        $('#igGrid').igGrid('saveChanges');
+    });
+    //$('#igGrid').on('iggridupdatingrowstarted', function () {
+    //    alert("iggridupdatingrowstarted");
+    //})
+
+    //$('#igGrid_updating_done').click(function () {
+    //    alert('button click handled');
+    //    $('#igGrid').igGrid('saveChanges');
+    //});
+</script>
